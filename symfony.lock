@@ -50,6 +50,9 @@
             ".php-cs-fixer.dist.php"
         ]
     },
+    "nesbot/carbon": {
+        "version": "2.53.1"
+    },
     "pdepend/pdepend": {
         "version": "2.10.1"
     },
@@ -220,6 +223,22 @@
     },
     "symfony/stopwatch": {
         "version": "v4.4.27"
+    },
+    "symfony/translation": {
+        "version": "4.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.3",
+            "ref": "2ad9d2545bce8ca1a863e50e92141f0b9d87ffcd"
+        },
+        "files": [
+            "config/packages/translation.yaml",
+            "translations/.gitignore"
+        ]
+    },
+    "symfony/translation-contracts": {
+        "version": "v2.4.0"
     },
     "symfony/var-dumper": {
         "version": "v4.4.31"
