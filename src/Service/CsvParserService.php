@@ -3,7 +3,9 @@
 namespace App\Service;
 
 use App\Entity\Customer;
+use App\Entity\Transaction;
 use App\Exception\FileException;
+use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
 
 class CsvParserService
@@ -28,8 +30,15 @@ class CsvParserService
             if (!$this->customers->containsKey((int)$data[1])) {
                 $this->customers->set((int)$data[1], new Customer((int)$data[1], (string)$data[2]));
             }
-            $this->customers->get((int)$data[1]);
-            dd($data);
+            $transaction = $this->parseTransactionToObject(
+                (string)$data[0],
+                (string)$data[3],
+                (string)$data[4],
+                (string)$data[5]
+            );
+            /** @var Customer $customer */
+            $customer = $this->customers->get((int)$data[1]);
+            $customer->addNewTransaction($transaction);
         }
 
         dd($this->customers);
@@ -37,17 +46,9 @@ class CsvParserService
         return true;
     }
 
-    /**
-     * Check if inside collection persis Customer
-     *
-     * @param int $customerId CustomerId to find
-     *
-     * @return bool Status if exist
-     */
-    private function checkIfCustomerInCollection(int $customerId): bool
+    private function parseTransactionToObject(string $date, string $type, string $amount, string $currency)
     {
-        return $this->customers->exists(function ($key, $customer) use ($customerId) {
-            return $customer->getCustomerId() === $customerId;
-        });
+        $date = Carbon::createFromFormat('Y-m-d', $date);
+        return new Transaction($date, $type, $amount, $currency);
     }
 }

@@ -72,8 +72,13 @@ class Customer
         return self::CUSTOMER_ACCOUNT_TYPES[$this->type];
     }
 
-    public function addNewTransaction()
+    /**
+     * Add new Transaction for Customer.
+     *
+     * @param Transaction $transaction
+     */
+    public function addNewTransaction(Transaction $transaction)
     {
-        $this->transactions->add();
+        $this->transactions->add($transaction);
     }
 }
