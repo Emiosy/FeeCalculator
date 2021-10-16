@@ -14,7 +14,7 @@ class Transaction
         2 => 'deposit',
     ];
 
-    public function __construct(Carbon $date, string $type, float $amount, string $currency)
+    public function __construct(Carbon $date, string $type, int $amount, string $currency)
     {
         $this->date = $date;
         $this->type = array_search($type, self::TRANSACTION_TYPES);
@@ -37,11 +37,11 @@ class Transaction
     private int $type;
 
     /**
-     * Transaction value
+     * Transaction value (without "pennies")
      *
-     * @var float
+     * @var int
      */
-    private float $amount;
+    private int $amount;
 
     /**
      * Transaction currency

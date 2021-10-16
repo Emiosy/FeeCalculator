@@ -7,6 +7,7 @@ use App\Exception\FileException;
 use App\Service\CsvParserService;
 use App\Service\ExchangeRatesService;
 use App\Service\FileService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,18 +21,43 @@ class CalculateFeeCommand extends Command
     private CsvParserService $csvParserService;
     private ExchangeRatesService $exchangeRatesService;
 
+    /**
+     * Array with currency rates.
+     *
+     * @var array
+     */
+    private array $currencyRates;
+
+    /**
+     * Array with accepted currencies.
+     *
+     * @var array
+     */
+    private array $acceptedCurrencies;
+
+    /**
+     * Collection with Customers and their transactions.
+     *
+     * @var ArrayCollection
+     */
+    private ArrayCollection $customers;
+
     public function __construct(
-        $name = null,
         ParameterBagInterface $params,
         FileService $fileService,
         CsvParserService $csvParserService,
-        ExchangeRatesService $exchangeRatesService
+        ExchangeRatesService $exchangeRatesService,
+        $name = null
     ) {
         parent::__construct($name);
         $this->params = $params;
         $this->fileService = $fileService;
         $this->exchangeRatesService = $exchangeRatesService;
         $this->csvParserService = $csvParserService;
+        $this->acceptedCurrencies = $this->exchangeRatesService->getParsedAcceptedCurrencies();
+
+        //TESTS
+        $this->currencyRates = ['EUR' => 1, 'USD' => 1.159911, 'JPY' => 132.671222];
     }
 
     protected static $defaultName = 'fee:calculate';
@@ -54,14 +80,17 @@ class CalculateFeeCommand extends Command
                 $this->params->get('file.extensionOfInputFile')
             );
 
-//            $currencyRates = $this->exchangeRatesService->downloadLatestExchangeRates(
+//            $this->currencyRates = $this->exchangeRatesService->downloadLatestExchangeRates(
 //                $this->params->get('exchangeApi.endpoint'),
 //                $this->params->get('exchangeApi.key')
 //            );
 
-            $currencyRates = ['EUR' => 1, 'USD' => 1.159911, 'JPY' => 132.671222];
+            $this->customers = $this->csvParserService->importCustomersAndTransactions(
+                $input->getArgument('filePath'),
+                $this->acceptedCurrencies
+            );
 
-            $this->csvParserService->importCustomersAndTransactions($input->getArgument('filePath'), $currencyRates);
+            dd($this->customers);
         } catch (FileException $e) {
             $output->writeln("Error with file - {$e->getMessage()}");
         } catch (ExchangeRatesException $e) {
