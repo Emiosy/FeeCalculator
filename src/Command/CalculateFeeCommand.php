@@ -4,7 +4,7 @@ namespace App\Command;
 
 use App\Exception\ExchangeRatesException;
 use App\Exception\FileException;
-use App\Service\CsvParserService;
+use App\Service\CommissionFeeService;
 use App\Service\ExchangeRatesService;
 use App\Service\FileService;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,7 +18,7 @@ class CalculateFeeCommand extends Command
 {
     private FileService $fileService;
     private ParameterBagInterface $params;
-    private CsvParserService $csvParserService;
+    private CommissionFeeService $commissionFeeService;
     private ExchangeRatesService $exchangeRatesService;
 
     /**
@@ -36,16 +36,16 @@ class CalculateFeeCommand extends Command
     private array $acceptedCurrencies;
 
     /**
-     * Collection with Customers and their transactions.
+     * Collection with Commission fees.
      *
      * @var ArrayCollection
      */
-    private ArrayCollection $customers;
+    private ArrayCollection $commissionFees;
 
     public function __construct(
         ParameterBagInterface $params,
         FileService $fileService,
-        CsvParserService $csvParserService,
+        CommissionFeeService $commissionFeeService,
         ExchangeRatesService $exchangeRatesService,
         $name = null
     ) {
@@ -53,7 +53,7 @@ class CalculateFeeCommand extends Command
         $this->params = $params;
         $this->fileService = $fileService;
         $this->exchangeRatesService = $exchangeRatesService;
-        $this->csvParserService = $csvParserService;
+        $this->commissionFeeService = $commissionFeeService;
         $this->acceptedCurrencies = $this->exchangeRatesService->getParsedAcceptedCurrencies();
 
         //TESTS
@@ -85,12 +85,13 @@ class CalculateFeeCommand extends Command
 //                $this->params->get('exchangeApi.key')
 //            );
 
-            $this->customers = $this->csvParserService->importCustomersAndTransactions(
+            $this->commissionFees = $this->commissionFeeService->calculateFee(
                 $input->getArgument('filePath'),
-                $this->acceptedCurrencies
+                $this->acceptedCurrencies,
+                $this->currencyRates
             );
 
-            dd($this->customers);
+            dd($this->commissionFees);
         } catch (FileException $e) {
             $output->writeln("Error with file - {$e->getMessage()}");
         } catch (ExchangeRatesException $e) {
