@@ -57,7 +57,7 @@ class CalculateFeeCommand extends Command
         $this->acceptedCurrencies = $this->exchangeRatesService->getParsedAcceptedCurrencies();
 
         //TESTS
-        $this->currencyRates = ['EUR' => 1, 'USD' => 1.159911, 'JPY' => 132.671222];
+        $this->currencyRates = ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53];
     }
 
     protected static $defaultName = 'fee:calculate';

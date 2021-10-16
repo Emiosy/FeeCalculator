@@ -1,3 +1,6 @@
 parameters:
   #Array with accepted currencies and decimal places foreach of them
   currencies.accept: [['EUR', 2], ['USD', 2], ['JPY', 0]]
+  #Array with deposit fee for each account type
+  currencies.deposit: [['business', 0.03], ['private', 0.03]]
+  currencies.default: 'EUR'

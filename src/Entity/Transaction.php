@@ -117,4 +117,14 @@ class Transaction
     {
         return self::TRANSACTION_TYPES[$this->transaction_type];
     }
+
+    /**
+     * Getter for Transaction value at raw format.
+     *
+     * @return int
+     */
+    public function getTransactionAmountString(): int
+    {
+        return $this->amount;
+    }
 }
