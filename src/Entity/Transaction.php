@@ -10,16 +10,16 @@ class Transaction
      * Customer transaction types
      */
     public const TRANSACTION_TYPES = [
-        1 => 'withdraw',
-        2 => 'deposit',
+        1 => 'deposit',
+        2 => 'withdraw',
     ];
 
     /**
      * Customer account types
      */
     public const CUSTOMER_ACCOUNT_TYPES = [
-        1 => 'private',
-        2 => 'business',
+        1 => 'business',
+        2 => 'private',
     ];
 
     public function __construct(
