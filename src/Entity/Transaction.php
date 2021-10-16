@@ -28,7 +28,8 @@ class Transaction
         string $customerType,
         string $transactionType,
         int $amount,
-        string $currency
+        string $currency,
+        int $amount_decimals
     ) {
         $this->date = $date;
         $this->customer_id = $customerId;
@@ -36,6 +37,7 @@ class Transaction
         $this->transaction_type = array_search($transactionType, self::TRANSACTION_TYPES);
         $this->amount = $amount;
         $this->currency = $currency;
+        $this->amount_decimals = $amount_decimals;
     }
 
     /**
@@ -75,8 +77,17 @@ class Transaction
 
     /**
      * Transaction currency
+     *
+     * @var string
      */
     private string $currency;
+
+    /**
+     * Decimals at amount
+     *
+     * @var int
+     */
+    private int $amount_decimals;
 
     /**
      * Getter for customer type.
@@ -119,12 +130,32 @@ class Transaction
     }
 
     /**
-     * Getter for Transaction value at raw format.
+     * Getter for Transaction amount at raw format.
      *
      * @return int
      */
-    public function getTransactionAmountString(): int
+    public function getTransactionAmount(): int
     {
         return $this->amount;
+    }
+
+    /**
+     * Getter for Transaction amount at string format.
+     *
+     * @return string
+     */
+    public function getTransactionAmountAsString(): string
+    {
+        return number_format(($this->amount / pow(10, $this->amount_decimals)), $this->amount_decimals, '.', '');
+    }
+
+    /**
+     * Getter for Transaction amount decimal places.
+     *
+     * @return int
+     */
+    public function getAmountDecimalPlaces(): int
+    {
+        return $this->amount_decimals;
     }
 }

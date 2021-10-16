@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\CurrenciesConfigParserTrait;
 use App\Entity\Transaction;
 use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,7 +10,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class CommissionFeeService
 {
-    private ParameterBagInterface $params;
+    use CurrenciesConfigParserTrait;
 
     /**
      * Parsed customers with transactions.
@@ -34,9 +35,7 @@ class CommissionFeeService
 
     public function __construct(ParameterBagInterface $params)
     {
-        $this->params = $params;
-
-        $this->depositFees = $this->getParsedFeesForCustomers('deposit');
+        $this->depositFees = $this->getParsedCurrenciesConfig($params, 'deposit');
         $this->transactions = new ArrayCollection();
         $this->commissionFees = new ArrayCollection();
     }
@@ -76,20 +75,10 @@ class CommissionFeeService
                     $this->processDeposit($transaction) :
                     $this->processWithdraw($transaction)
                 );
+                dd($fee);
             }
         }
         return $this->commissionFees;
-    }
-
-    private function processDeposit(Transaction $transaction)
-    {
-        dd($this->depositFees[$transaction->getCustomerTypeAsString()]);
-        return 'DEPO';
-    }
-
-    private function processWithdraw(Transaction $transaction)
-    {
-        return 'WITH';
     }
 
     /**
@@ -134,22 +123,30 @@ class CommissionFeeService
             (string)$rowFromCsv[2],
             (string)$rowFromCsv[3],
             (int)$parsedAmount,
-            (string)$rowFromCsv[5]
+            (string)$rowFromCsv[5],
+            $decimalsOfCurrency
         );
     }
 
     /**
-     * Get parsed array with fees.
+     * Process deposit transaction and calculate commission.
      *
-     * @return array Array with types of account and connected fees.
+     * @param Transaction $transaction Transaction to process
+     *
+     * @return float Amount of commission
      */
-    private function getParsedFeesForCustomers(string $nameOfParameter): array
+    private function processDeposit(Transaction $transaction): float
     {
-        $fees = [];
-        foreach ($this->params->get("currencies.{$nameOfParameter}") as $fee) {
-            $fees[$fee[array_key_first($fee)]] = $fee[array_key_last($fee)];
-        }
+        //Calculate correct fee depending on type of account
+        $fee = bcdiv($this->depositFees[$transaction->getCustomerTypeAsString()], 100, 10);
+        //Calculate commission
+        $commission = bcmul($transaction->getTransactionAmountAsString(), $fee, 10);
 
-        return $fees;
+        return round($commission, $transaction->getAmountDecimalPlaces(), PHP_ROUND_HALF_UP);
+    }
+
+    private function processWithdraw(Transaction $transaction)
+    {
+        return 'WITH';
     }
 }
