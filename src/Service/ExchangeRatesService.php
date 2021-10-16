@@ -24,8 +24,11 @@ class ExchangeRatesService
     }
 
     /**
-     * @param string $apiEndpoint
-     * @param string $apiKey
+     * Download the latest exchange rates.
+     *
+     * @param string $apiEndpoint Api endpoint URL
+     * @param string $apiKey Api endpoint key
+     *
      * @return Exception|mixed|ClientExceptionInterface|DecodingExceptionInterface|RedirectionExceptionInterface|ServerExceptionInterface|TransportExceptionInterface
      */
     public function downloadLatestExchangeRates(string $apiEndpoint, string $apiKey)
@@ -65,7 +68,7 @@ class ExchangeRatesService
     /**
      * Get parsed array with accepted currencies.
      *
-     * @return array
+     * @return array Array with accepted currencies with decimal places
      */
     public function getParsedAcceptedCurrencies(): array
     {
