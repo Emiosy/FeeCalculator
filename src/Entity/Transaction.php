@@ -79,7 +79,7 @@ class Transaction
     private string $currency;
 
     /**
-     * Getter for Customer type.
+     * Getter for customer type.
      *
      * @return string
      */
@@ -89,12 +89,32 @@ class Transaction
     }
 
     /**
-     * Getter for Customer type as string.
+     * Getter for customer type as string.
      *
      * @return string
      */
     public function getCustomerTypeAsString(): string
     {
         return self::CUSTOMER_ACCOUNT_TYPES[$this->customer_type];
+    }
+
+    /**
+     * Getter for Transaction type.
+     *
+     * @return string
+     */
+    public function getTransactionType()
+    {
+        return $this->transaction_type;
+    }
+
+    /**
+     * Getter for Transaction type as string.
+     *
+     * @return string
+     */
+    public function getTransactionTypeAsString(): string
+    {
+        return self::TRANSACTION_TYPES[$this->transaction_type];
     }
 }
