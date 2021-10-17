@@ -8,7 +8,6 @@ use App\Exception\FileException;
 use App\Service\CommissionFeeService;
 use App\Service\ExchangeRatesService;
 use App\Service\FileService;
-use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,13 +36,6 @@ class CalculateFeeCommand extends Command
      * @var array
      */
     private array $acceptedCurrencies;
-
-    /**
-     * Collection with Commission fees.
-     *
-     * @var ArrayCollection
-     */
-    private ArrayCollection $commissionFees;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -86,14 +78,14 @@ class CalculateFeeCommand extends Command
 //                $this->params->get('exchangeApi.key')
 //            );
 
-            $this->commissionFees = $this->commissionFeeService->calculateFee(
+            $commissionFees = $this->commissionFeeService->calculateFee(
                 $input->getArgument('filePath'),
                 $this->acceptedCurrencies,
                 $this->currencyRates
             );
 
-            if (!$this->commissionFees->isEmpty()) {
-                foreach ($this->commissionFees as $commission) {
+            if (!$commissionFees->isEmpty()) {
+                foreach ($commissionFees as $commission) {
                     $output->writeln($commission);
                 }
             }
