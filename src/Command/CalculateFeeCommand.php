@@ -81,15 +81,8 @@ class CalculateFeeCommand extends Command
             );
 
             if (!$commissionFees->isEmpty()) {
-                $feeCounter = $commissionFees->count();
-                $printCounter = 1;
                 foreach ($commissionFees as $commission) {
-                    if ($feeCounter === $printCounter) {
-                        $output->write($commission);
-                    } else {
-                        $output->writeln($commission);
-                    }
-                    $printCounter++;
+                    $output->writeln($commission);
                 }
             }
         } catch (FileException $e) {

@@ -39,8 +39,7 @@ APP_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXX
 To run app simply run, where `XXX` is location to CSV file.
 ```bash
 php bin/console fee:calculate XXX
-php bin/console fee:calculate input.csv
-php bin/console fee:calculate tests/input.csv
+php bin/console fee:calculate assets/input.csv
 ```
 App provides `demoMode` where You have fixed exchange rates. Feature was written to have better error handling. Demo modes provides rates below:
 ```php
@@ -49,8 +48,7 @@ App provides `demoMode` where You have fixed exchange rates. Feature was written
 You can run this by adding `demoMode` as second parameter
 ```bash
 php bin/console fee:calculate XXX demoMode
-php bin/console fee:calculate input.csv demoMode
-php bin/console fee:calculate tests/input.csv demoMode
+php bin/console fee:calculate assets/input.csv demoMode
 ```
 
 ***
