@@ -75,8 +75,6 @@ class CalculateFeeCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $output->writeln('Starting calculations');
-
         try {
             $this->fileService->checkFileAndExtension(
                 $input->getArgument('filePath'),
@@ -94,14 +92,16 @@ class CalculateFeeCommand extends Command
                 $this->currencyRates
             );
 
-            dd($this->commissionFees);
+            if (!$this->commissionFees->isEmpty()) {
+                foreach ($this->commissionFees as $commission) {
+                    $output->writeln($commission);
+                }
+            }
         } catch (FileException $e) {
             $output->writeln("Error with file - {$e->getMessage()}");
         } catch (ExchangeRatesException $e) {
             $output->writeln("Error with ExchangeRates API - {$e->getMessage()}");
         }
-
-        $output->writeln('End of calculations');
 
         return 0;
     }
