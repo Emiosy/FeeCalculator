@@ -99,3 +99,16 @@ For more user can change at one place
         * fee: `0.3%`, *value when user exceed `free_quota` or `free_transaction` limit*
         * free_quota: `100000`, *value with included decimals example: 1EUR = 100*
         * free_transactions: `3`, *amount of free transaction per week*
+
+All packaged at one configuration file `config/currencies.yaml`
+```yaml
+parameters:
+  #Array with accepted currencies and decimal places foreach of them
+  currencies.accept: [['EUR', 2], ['USD', 2], ['JPY', 0]]
+  #Array with deposit fee for each account type
+  currencies.deposit: [['business', 0.03], ['private', 0.03]]
+  #Array with withdraw rules
+  currencies.withdraw: [['business', [['fee', 0.5], ['free_quota', 0], ['free_transactions', 0]]], ['private', [['fee', 0.3], ['free_quota', 100000], ['free_transactions', 3]]]]
+  #Default currency for operations (only EUR is available at Free Plan of API)
+  currencies.default: 'EUR'
+```
