@@ -13,18 +13,11 @@ class CommissionFeeService
     use CurrenciesConfigParserTrait;
 
     /**
-     * Parsed customers with transactions.
+     * Array with decimal places of currencies.
      *
-     * @var ArrayCollection
+     * @var array
      */
-    private ArrayCollection $transactions;
-
-    /**
-     * Collection with calculated commission fees
-     *
-     * @var ArrayCollection Commission fees
-     */
-    private ArrayCollection $commissionFees;
+    private array $decimalPlaces;
 
     /**
      * Array with parsed deposit fees.
@@ -40,10 +33,41 @@ class CommissionFeeService
      */
     private array $withdrawFees;
 
-    public function __construct(ParameterBagInterface $params)
+    /**
+     * Base currency for calculations.
+     *
+     * @var string
+     */
+    private $baseCurrency;
+
+    /**
+     * Exchange rates Service
+     *
+     * @var ExchangeRatesService
+     */
+    private ExchangeRatesService $exchangeRates;
+
+    /**
+     * Parsed customers with transactions.
+     *
+     * @var ArrayCollection
+     */
+    private ArrayCollection $transactions;
+
+    /**
+     * Collection with calculated commission fees
+     *
+     * @var ArrayCollection Commission fees
+     */
+    private ArrayCollection $commissionFees;
+
+    public function __construct(ParameterBagInterface $params, ExchangeRatesService $exchangeRatesService)
     {
+        $this->decimalPlaces = $this->getParsedCurrenciesConfig($params, 'accept');
         $this->depositFees = $this->getParsedCurrenciesConfig($params, 'deposit');
         $this->withdrawFees = $this->getParsedCurrenciesNestedConfig($params, 'withdraw');
+        $this->baseCurrency = $this->getPlainCurrenciesConfig($params, 'default');
+        $this->exchangeRates = $exchangeRatesService;
         $this->transactions = new ArrayCollection();
         $this->commissionFees = new ArrayCollection();
     }
@@ -83,7 +107,7 @@ class CommissionFeeService
                     $this->processDeposit($transaction) :
                     $this->processWithdraw($transaction, $currencyRates)
                 );
-                dd($fee);
+//                dd($fee);
                 $this->commissionFees->add($fee);
             }
         }
@@ -146,16 +170,179 @@ class CommissionFeeService
      */
     private function processDeposit(Transaction $transaction): float
     {
-        //Calculate correct fee depending on type of account
-        $fee = bcdiv($this->depositFees[$transaction->getCustomerTypeAsString()], 100, 10);
-        //Calculate commission
-        $commission = bcmul($transaction->getTransactionAmountAsString(), $fee, 10);
-
-        return round($commission, $transaction->getAmountDecimalPlaces(), PHP_ROUND_HALF_UP);
+        return $this->calculateCommissionForTransactionAmount(
+            $transaction->getTransactionAmountAsString(),
+            $transaction->getTransactionCurrency(),
+            $this->depositFees[$transaction->getCustomerTypeAsString()]
+        );
     }
 
+    /**
+     * Process withdraw transaction and calculate commission fee.
+     *
+     * @param Transaction $transaction Transaction to process
+     * @param array $currencyRates Array with currency rates
+     *
+     * @return float|string Amount of commission
+     */
     private function processWithdraw(Transaction $transaction, array $currencyRates)
     {
-        return 'WITH';
+        //Initialize fee
+        $fee = number_format(0, $transaction->getAmountDecimalPlaces(), '.', '');
+        //Get all non parsed transaction in billing week of transaction
+        $transactionsToCheck = $this->getPastNotParsedTransactions($transaction, 'withdraw');
+        //Calculate amount of withdrawn money at billing week
+        $moneyWithdrawnAtWeek = $this->calculateMoneyWithdrawnAtWeek($transactionsToCheck, $currencyRates);
+        //Check amount over quota
+        $amountOverQuota = $this->checkAmountOverQuota(
+            $moneyWithdrawnAtWeek,
+            $transaction->getTransactionAmount(),
+            $this->withdrawFees[$transaction->getCustomerTypeAsString()]['free_quota']
+        );
+
+        if (bccomp($amountOverQuota, 0, 10) === 1) {
+            $fee = $this->calculateCommissionForTransactionAmount(
+                $amountOverQuota,
+                $transaction->getTransactionCurrency(),
+                $this->withdrawFees[$transaction->getCustomerTypeAsString()]['fee']
+            );
+        } else {
+            //Free of charge, but count transaction with this transaction
+            if (
+                ($transactionsToCheck->count() + 1)
+                    >
+                $this->withdrawFees[$transaction->getCustomerTypeAsString()]['free_transactions']
+            ) {
+                //This is transaction over free amount
+                $fee = $this->calculateCommissionForTransactionAmount(
+                    $amountOverQuota,
+                    $transaction->getTransactionCurrency(),
+                    $this->withdrawFees[$transaction->getCustomerTypeAsString()]['fee']
+                );
+            }
+        }
+
+//        if ($transaction->getTransactionCurrency() === 'JPY') {
+//            dd($transactionsToCheck, $moneyWithdrawnAtWeek);
+//        }
+
+        return $fee;
+    }
+
+    /**
+     * Calculate commission for transaction amount
+     *
+     * @param string $amount Amount to calculate fee
+     * @param string $currency Currency of transaction to return correct format
+     * @param string $fee Amount of fee
+     *
+     * @return float
+     */
+    private function calculateCommissionForTransactionAmount(string $amount, string $currency, string $fee): float
+    {
+        //Calculate correct format of percents
+        $percents = bcdiv($fee, 100, 10);
+        //Calculate final fee
+        $fee = bcmul($amount, $percents, 10);
+
+        return round($fee, $this->decimalPlaces[$currency], PHP_ROUND_HALF_UP);
+    }
+
+    /**
+     * Check amount over quota.
+     *
+     * @param string $moneyWithdrawnAtWeek Sum amount of transaction from billing week
+     * @param string $amountOfTransaction Amount of actual transaction
+     * @param string $withdrawQuota
+     *
+     * @return string Amount of transaction to calculate fee (If >0 user fee should be calculated)
+     */
+    private function checkAmountOverQuota(
+        string $moneyWithdrawnAtWeek,
+        string $amountOfTransaction,
+        string $withdrawQuota
+    ): string {
+        //Check if full amount of transaction is over quota
+        if (bccomp($moneyWithdrawnAtWeek, $withdrawQuota, 10) === 1) {
+            //All amount is over quota, calculate fee for 100% of transaction
+            return $amountOfTransaction;
+        } else {
+            //Free quota detected, calculate amount that is over quota
+            $freeQuota = bcsub($withdrawQuota, $moneyWithdrawnAtWeek, 10);
+            $amountOfTransaction = bcsub($amountOfTransaction, $freeQuota);
+        }
+
+        //If $amountOfTransaction >0 user fee should be calculated
+        return $amountOfTransaction;
+    }
+
+    /**
+     * Money withdrawn at passed transactions.
+     *
+     * @param ArrayCollection $transactionToCheck Transaction of withdraw to check
+     * @param array $currencyRates Currency rates to do a calculations
+     *
+     * @return string Amount of withdrawn money at base currency
+     */
+    private function calculateMoneyWithdrawnAtWeek(ArrayCollection $transactionToCheck, array $currencyRates): string
+    {
+        $moneyWithdrawn = 0;
+
+        if (!$transactionToCheck->isEmpty()) {
+            /** @var Transaction $transaction */
+            foreach ($transactionToCheck as $transaction) {
+                //Check if transaction currency is at base currency
+                if ($transaction->getTransactionCurrency() !== $this->baseCurrency) {
+                    $moneyWithdrawn = bcadd($moneyWithdrawn, $this->exchangeRates->changeCurrencyOfValue(
+                        (string)$transaction->getTransactionAmount(),
+                        (string)$currencyRates[$transaction->getTransactionCurrency()]
+                    ), 10);
+                } else {
+                    $moneyWithdrawn = bcadd($moneyWithdrawn, $transaction->getTransactionAmount(), 10);
+                }
+            }
+        }
+
+        return (string)$moneyWithdrawn;
+    }
+
+    /**
+     * Get all parsed transactions of customer from billing week.
+     *
+     * @param Transaction $compareTransaction Transaction to compare
+     * @param string $typeOfTransaction Type of transaction (deposit | withdraw)
+     *
+     * @return ArrayCollection Array collection with transaction to parse
+     */
+    private function getPastNotParsedTransactions(
+        Transaction $compareTransaction,
+        string $typeOfTransaction
+    ): ArrayCollection {
+        $startWeek = $compareTransaction->getTransactionBillingWeek()['startOfWeek'];
+        $endWeek = $compareTransaction->getTransactionBillingWeek()['endOfWeek'];
+
+        $transactionToCheck = $this->transactions->filter(
+            /**
+             * @param Transaction $transaction
+             * @return bool|void
+             */
+            function (Transaction $transaction) use ($compareTransaction, $startWeek, $endWeek, $typeOfTransaction) {
+                if (
+                    $transaction->getParsedStatus()
+                        &&
+                    $transaction->getCustomerId() === $compareTransaction->getCustomerId()
+                        &&
+                    $transaction->getTransactionTypeAsString() === $typeOfTransaction
+                        &&
+                    $transaction->getTransactionDate()->between($startWeek, $endWeek, true)
+                ) {
+                    return true;
+                }
+            }
+        );
+
+        $compareTransaction->setParsedStatus(true);
+
+        return $transactionToCheck;
     }
 }
