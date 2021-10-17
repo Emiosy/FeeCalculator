@@ -222,7 +222,7 @@ class Transaction
      *
      * @return bool
      */
-    public function getParsedStatus(): bool
+    public function isParsedStatus(): bool
     {
         return $this->is_parsed;
     }

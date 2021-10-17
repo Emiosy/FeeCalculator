@@ -415,7 +415,7 @@ class CommissionFeeService
          */
             function (Transaction $transaction) use ($compareTransaction, $startWeek, $endWeek, $typeOfTransaction) {
                 if (
-                    $transaction->getParsedStatus()
+                    $transaction->isParsedStatus()
                     &&
                     $transaction->getCustomerId() === $compareTransaction->getCustomerId()
                     &&
