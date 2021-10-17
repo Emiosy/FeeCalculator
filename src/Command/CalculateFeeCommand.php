@@ -79,11 +79,15 @@ class CalculateFeeCommand extends Command
                 $currencyRates
             );
 
-            if (!$commissionFees->isEmpty()) {
-                foreach ($commissionFees as $commission) {
-                    $output->writeln($commission);
-                }
+            while(!$commissionFees->isEmpty()){
+
             }
+
+//            if (!$commissionFees->isEmpty()) {
+//                foreach ($commissionFees as $commission) {
+//                    $output->writeln($commission);
+//                }
+//            }
         } catch (FileException $e) {
             $output->writeln("Error with file - {$e->getMessage()}");
         } catch (ExchangeRatesException $e) {
