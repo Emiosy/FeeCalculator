@@ -183,9 +183,9 @@ class CommissionFeeService
      * @param Transaction $transaction Transaction to process
      * @param array $currencyRates Array with currency rates
      *
-     * @return float|string Amount of commission
+     * @return string Amount of commission
      */
-    private function processWithdraw(Transaction $transaction, array $currencyRates)
+    private function processWithdraw(Transaction $transaction, array $currencyRates): string
     {
         //Initialize fee
         $fee = number_format(0, $transaction->getAmountDecimalPlaces(), '.', '');
@@ -210,7 +210,7 @@ class CommissionFeeService
             //Free of charge, but count transaction with this transaction
             if (
                 ($transactionsToCheck->count() + 1)
-                    >
+                >
                 $this->withdrawFees[$transaction->getCustomerTypeAsString()]['free_transactions']
             ) {
                 //This is transaction over free amount
@@ -326,24 +326,24 @@ class CommissionFeeService
      */
     private function getPastNotParsedTransactions(
         Transaction $compareTransaction,
-        string $typeOfTransaction
+        string      $typeOfTransaction
     ): ArrayCollection {
         $startWeek = $compareTransaction->getTransactionBillingWeek()['startOfWeek'];
         $endWeek = $compareTransaction->getTransactionBillingWeek()['endOfWeek'];
 
         $transactionToCheck = $this->transactions->filter(
-            /**
-             * @param Transaction $transaction
-             * @return bool|void
-             */
+        /**
+         * @param Transaction $transaction
+         * @return bool|void
+         */
             function (Transaction $transaction) use ($compareTransaction, $startWeek, $endWeek, $typeOfTransaction) {
                 if (
                     $transaction->getParsedStatus()
-                        &&
+                    &&
                     $transaction->getCustomerId() === $compareTransaction->getCustomerId()
-                        &&
+                    &&
                     $transaction->getTransactionTypeAsString() === $typeOfTransaction
-                        &&
+                    &&
                     $transaction->getTransactionDate()->between($startWeek, $endWeek, true)
                 ) {
                     return true;
