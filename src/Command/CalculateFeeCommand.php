@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\CurrenciesConfigParserTrait;
 use App\Exception\ExchangeRatesException;
 use App\Exception\FileException;
 use App\Service\CommissionFeeService;
@@ -16,6 +17,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class CalculateFeeCommand extends Command
 {
+    use CurrenciesConfigParserTrait;
+
     private FileService $fileService;
     private ParameterBagInterface $params;
     private CommissionFeeService $commissionFeeService;
@@ -54,7 +57,7 @@ class CalculateFeeCommand extends Command
         $this->fileService = $fileService;
         $this->exchangeRatesService = $exchangeRatesService;
         $this->commissionFeeService = $commissionFeeService;
-        $this->acceptedCurrencies = $this->exchangeRatesService->getParsedAcceptedCurrencies();
+        $this->acceptedCurrencies = $this->getParsedCurrenciesConfig($this->params, 'accept');
 
         //TESTS
         $this->currencyRates = ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53];

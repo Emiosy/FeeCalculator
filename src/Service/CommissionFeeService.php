@@ -73,9 +73,10 @@ class CommissionFeeService
                 $fee = (
                     ($transaction->getTransactionType() === 1) ?
                     $this->processDeposit($transaction) :
-                    $this->processWithdraw($transaction)
+                    $this->processWithdraw($transaction, $currencyRates)
                 );
                 dd($fee);
+                $this->commissionFees->add($fee);
             }
         }
         return $this->commissionFees;
@@ -145,7 +146,7 @@ class CommissionFeeService
         return round($commission, $transaction->getAmountDecimalPlaces(), PHP_ROUND_HALF_UP);
     }
 
-    private function processWithdraw(Transaction $transaction)
+    private function processWithdraw(Transaction $transaction, array $currencyRates)
     {
         return 'WITH';
     }

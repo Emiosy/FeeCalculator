@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\CurrenciesConfigParserTrait;
 use App\Exception\ExchangeRatesException;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -14,6 +15,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ExchangeRatesService
 {
+    use CurrenciesConfigParserTrait;
+
     private HttpClientInterface $client;
     private ParameterBagInterface $params;
 
@@ -40,7 +43,10 @@ class ExchangeRatesService
                 [
                     'query' => [
                         'access_key' => $apiKey,
-                        'symbols' => implode(',', array_keys($this->getParsedAcceptedCurrencies())),
+                        'symbols' => implode(',', array_keys($this->getParsedCurrenciesConfig(
+                            $this->params,
+                            'accept'
+                        ))),
                     ]
                 ]
             );
@@ -63,20 +69,5 @@ class ExchangeRatesService
         ) {
             return $e;
         }
-    }
-
-    /**
-     * Get parsed array with accepted currencies.
-     *
-     * @return array Array with accepted currencies with decimal places
-     */
-    public function getParsedAcceptedCurrencies(): array
-    {
-        $currencies = [];
-        foreach ($this->params->get('currencies.accept') as $currency) {
-            $currencies[$currency[array_key_first($currency)]] = $currency[array_key_last($currency)];
-        }
-
-        return $currencies;
     }
 }
