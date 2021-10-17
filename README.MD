@@ -21,11 +21,16 @@ git clone https://github.com/Emiosy/FeeCalculator.git
 EXCHANGE_RATES_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 **Warning: Free key allow You to use only `EUR` as base currency.**
+
 4. Install all dependencies via Composer2
 ```php
 php composer.phar install
 ```
-5. Setup Your currencies configuration at `config/currencies.yaml` or leave default. *More information about it You can find at Description section*
+5. Generate `APP_SECRET` by command
+```php
+php bin/console secrets:generate-keys
+```
+6. Setup Your currencies configuration at `config/currencies.yaml` or leave default. *More information about it You can find at Description section*
 
 ***
 
