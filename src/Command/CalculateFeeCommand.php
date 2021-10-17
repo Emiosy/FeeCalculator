@@ -24,13 +24,6 @@ class CalculateFeeCommand extends Command
     private ExchangeRatesService $exchangeRatesService;
 
     /**
-     * Array with currency rates.
-     *
-     * @var array
-     */
-    private array $currencyRates;
-
-    /**
      * Array with accepted currencies.
      *
      * @var array
@@ -50,9 +43,6 @@ class CalculateFeeCommand extends Command
         $this->exchangeRatesService = $exchangeRatesService;
         $this->commissionFeeService = $commissionFeeService;
         $this->acceptedCurrencies = $this->getParsedCurrenciesConfig($this->params, 'accept');
-
-        //TESTS
-        $this->currencyRates = ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53];
     }
 
     protected static $defaultName = 'fee:calculate';
@@ -61,6 +51,7 @@ class CalculateFeeCommand extends Command
     {
         $this
             ->addArgument('filePath', InputArgument::REQUIRED, 'Path to a file with transactions to parse.')
+            ->addArgument('demoMode', InputArgument::OPTIONAL, 'Mode with no live download of exchange rates.')
             ->setDescription('Calculate fees for transactions.')
             ->setHelp("This command calculate fees from input file");
     }
@@ -73,15 +64,19 @@ class CalculateFeeCommand extends Command
                 $this->params->get('file.extensionOfInputFile')
             );
 
-//            $this->currencyRates = $this->exchangeRatesService->downloadLatestExchangeRates(
-//                $this->params->get('exchangeApi.endpoint'),
-//                $this->params->get('exchangeApi.key')
-//            );
+            if (!is_null($input->getArgument('demoMode'))) {
+                $currencyRates = ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53];
+            } else {
+                $currencyRates = $this->exchangeRatesService->downloadLatestExchangeRates(
+                    $this->params->get('exchangeApi.endpoint'),
+                    $this->params->get('exchangeApi.key')
+                );
+            }
 
             $commissionFees = $this->commissionFeeService->calculateFee(
                 $input->getArgument('filePath'),
                 $this->acceptedCurrencies,
-                $this->currencyRates
+                $currencyRates
             );
 
             if (!$commissionFees->isEmpty()) {
