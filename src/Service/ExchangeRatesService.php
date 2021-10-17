@@ -43,6 +43,7 @@ class ExchangeRatesService
                 [
                     'query' => [
                         'access_key' => $apiKey,
+                        'base' => $this->getPlainCurrenciesConfig($this->params, 'default'),
                         'symbols' => implode(',', array_keys($this->getParsedCurrenciesConfig(
                             $this->params,
                             'accept'
@@ -67,7 +68,7 @@ class ExchangeRatesService
             ServerExceptionInterface |
             RedirectionExceptionInterface $e
         ) {
-            return $e;
+            throw new ExchangeRatesException("Error with HTTP Client: {$e->getMessage()}");
         }
     }
 }

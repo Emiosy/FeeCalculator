@@ -3,4 +3,5 @@ parameters:
   currencies.accept: [['EUR', 2], ['USD', 2], ['JPY', 0]]
   #Array with deposit fee for each account type
   currencies.deposit: [['business', 0.03], ['private', 0.03]]
+  #Default currency for operations (only EUR is available at Free Plan of API)
   currencies.default: 'EUR'

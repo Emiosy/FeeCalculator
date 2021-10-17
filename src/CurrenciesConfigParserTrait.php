@@ -20,4 +20,14 @@ trait CurrenciesConfigParserTrait
 
         return $configArray;
     }
+
+    /**
+     * Get plain value with config about currencies.
+     *
+     * @return array|bool|float|int|string|null Plain value with config
+     */
+    public function getPlainCurrenciesConfig(ParameterBagInterface $params, string $nameOfParameter)
+    {
+        return $params->get("currencies.{$nameOfParameter}");
+    }
 }
