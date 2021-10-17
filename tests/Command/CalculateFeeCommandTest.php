@@ -14,18 +14,15 @@ class CalculateFeeCommandTest extends KernelTestCase
     {
         $kernel = static::createKernel();
         $application = new Application($kernel);
+
         $command = $application->find('fee:calculate');
         $commandTester = new CommandTester($command);
         $commandTester->execute(['filePath' => getcwd() . '/assets/input.csv', 'demoMode' => true]);
-        $output = $commandTester->getDisplay();
-//        file_put_contents(getcwd() . '/assets/out.csv', $output);
-        dd($output);
 
-//        $this->assertStringContainsString('Detected name', $output);
-//        $this->assertStringContainsString('Company 3', $output);
-//        $this->assertStringContainsString('Company 1', $output);
-//        $this->assertStringNotContainsString('violations', $output);
-//        $this->assertStringNotContainsString('No duplicates', $output);
+        $output = $commandTester->getDisplay();
+
+        $this->assertEquals(md5_file(getcwd() . '/assets/output.csv'), md5($output));
+        $this->assertEquals(sha1_file(getcwd() . '/assets/output.csv'), sha1($output));
     }
 
     protected function setUp(): void
