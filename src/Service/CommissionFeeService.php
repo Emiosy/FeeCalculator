@@ -107,7 +107,6 @@ class CommissionFeeService
                     $this->processDeposit($transaction) :
                     $this->processWithdraw($transaction, $currencyRates)
                 );
-//                dd($fee);
                 $this->commissionFees->add($fee);
             }
         }
@@ -125,7 +124,7 @@ class CommissionFeeService
     public function readAndParseTransactions(string $filePath, array $acceptedCurrencies): ArrayCollection
     {
         $fileToRead = fopen($filePath, "r");
-        while (($data = fgetcsv($fileToRead, 1000, ",")) !== false) {
+        while (($data = fgetcsv($fileToRead, 1000)) !== false) {
             //Check if currency is acceptable
             if (in_array((string)$data[5], array_keys($acceptedCurrencies))) {
                 $transaction = $this->parseTransactionToObject($data, $acceptedCurrencies[(string)$data[5]]);
@@ -221,10 +220,6 @@ class CommissionFeeService
                 );
             }
         }
-
-//        if ($transaction->getTransactionCurrency() === 'JPY') {
-//            dd($transactionsToCheck, $moneyWithdrawnAtWeek);
-//        }
 
         return $fee;
     }
@@ -326,7 +321,7 @@ class CommissionFeeService
      */
     private function getPastNotParsedTransactions(
         Transaction $compareTransaction,
-        string      $typeOfTransaction
+        string $typeOfTransaction
     ): ArrayCollection {
         $startWeek = $compareTransaction->getTransactionBillingWeek()['startOfWeek'];
         $endWeek = $compareTransaction->getTransactionBillingWeek()['endOfWeek'];
