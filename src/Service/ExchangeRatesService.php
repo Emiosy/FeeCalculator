@@ -5,7 +5,7 @@ namespace App\Service;
 use App\CurrenciesConfigParserTrait;
 use App\Exception\ExchangeRatesException;
 use Exception;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -18,11 +18,11 @@ class ExchangeRatesService
     use CurrenciesConfigParserTrait;
 
     private HttpClientInterface $client;
-    private ParameterBagInterface $params;
+    private ContainerInterface $container;
 
-    public function __construct(ParameterBagInterface $params, HttpClientInterface $client)
+    public function __construct(ContainerInterface $container, HttpClientInterface $client)
     {
-        $this->params = $params;
+        $this->container = $container;
         $this->client = $client;
     }
 
@@ -43,9 +43,9 @@ class ExchangeRatesService
                 [
                     'query' => [
                         'access_key' => $apiKey,
-                        'base' => $this->getPlainCurrenciesConfig($this->params, 'default'),
+                        'base' => $this->getPlainCurrenciesConfig($this->container, 'default'),
                         'symbols' => implode(',', array_keys($this->getParsedCurrenciesConfig(
-                            $this->params,
+                            $this->container,
                             'accept'
                         ))),
                     ]

@@ -2,7 +2,7 @@
 
 namespace App;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 trait CurrenciesConfigParserTrait
 {
@@ -11,10 +11,10 @@ trait CurrenciesConfigParserTrait
      *
      * @return array Parsed array with config.
      */
-    public function getParsedCurrenciesConfig(ParameterBagInterface $params, string $nameOfParameter): array
+    public function getParsedCurrenciesConfig(ContainerInterface $container, string $nameOfParameter): array
     {
         $configArray = [];
-        foreach ($params->get("currencies.{$nameOfParameter}") as $calledConfig) {
+        foreach ($container->getParameter("currencies.{$nameOfParameter}") as $calledConfig) {
             $configArray[$calledConfig[array_key_first($calledConfig)]] = $calledConfig[array_key_last($calledConfig)];
         }
 
@@ -26,10 +26,10 @@ trait CurrenciesConfigParserTrait
      *
      * @return array Parsed array with config.
      */
-    public function getParsedCurrenciesNestedConfig(ParameterBagInterface $params, string $nameOfParameter): array
+    public function getParsedCurrenciesNestedConfig(ContainerInterface $container, string $nameOfParameter): array
     {
         $configArray = [];
-        foreach ($params->get("currencies.{$nameOfParameter}") as $calledConfig) {
+        foreach ($container->getParameter("currencies.{$nameOfParameter}") as $calledConfig) {
             $innerConfigArray = [];
             foreach ($calledConfig[array_key_last($calledConfig)] as $innerConfig) {
                 $innerConfigName = $innerConfig[array_key_first($innerConfig)];
@@ -46,8 +46,8 @@ trait CurrenciesConfigParserTrait
      *
      * @return array|bool|float|int|string|null Plain value with config
      */
-    public function getPlainCurrenciesConfig(ParameterBagInterface $params, string $nameOfParameter)
+    public function getPlainCurrenciesConfig(ContainerInterface $container, string $nameOfParameter)
     {
-        return $params->get("currencies.{$nameOfParameter}");
+        return $container->getParameter("currencies.{$nameOfParameter}");
     }
 }

@@ -12,14 +12,15 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class CalculateFeeCommand extends Command
 {
     use CurrenciesConfigParserTrait;
 
+    private ContainerInterface $container;
     private FileService $fileService;
-    private ParameterBagInterface $params;
     private CommissionFeeService $commissionFeeService;
     private ExchangeRatesService $exchangeRatesService;
 
@@ -31,18 +32,18 @@ class CalculateFeeCommand extends Command
     private array $acceptedCurrencies;
 
     public function __construct(
-        ParameterBagInterface $params,
+        ContainerInterface $container,
         FileService $fileService,
         CommissionFeeService $commissionFeeService,
         ExchangeRatesService $exchangeRatesService,
         $name = null
     ) {
         parent::__construct($name);
-        $this->params = $params;
+        $this->container = $container;
         $this->fileService = $fileService;
         $this->exchangeRatesService = $exchangeRatesService;
         $this->commissionFeeService = $commissionFeeService;
-        $this->acceptedCurrencies = $this->getParsedCurrenciesConfig($this->params, 'accept');
+        $this->acceptedCurrencies = $this->getParsedCurrenciesConfig($this->container, 'accept');
     }
 
     protected static $defaultName = 'fee:calculate';
@@ -61,15 +62,15 @@ class CalculateFeeCommand extends Command
         try {
             $this->fileService->checkFileAndExtension(
                 $input->getArgument('filePath'),
-                $this->params->get('file.extensionOfInputFile')
+                $this->container->getParameter('file.extensionOfInputFile')
             );
 
             if (!is_null($input->getArgument('demoMode'))) {
                 $currencyRates = ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53];
             } else {
                 $currencyRates = $this->exchangeRatesService->downloadLatestExchangeRates(
-                    $this->params->get('exchangeApi.endpoint'),
-                    $this->params->get('exchangeApi.key')
+                    $this->container->getParameter('exchangeApi.endpoint'),
+                    $this->container->getParameter('exchangeApi.key')
                 );
             }
 

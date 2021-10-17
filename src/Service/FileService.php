@@ -61,7 +61,7 @@ class FileService
     private function checkFileExtension(string $filePath, string $extension): void
     {
         if (strtolower(pathinfo($filePath)['extension']) !== strtolower($extension)) {
-            throw new FileException("Wrong extension (not .{$extension}) of file: $filePath");
+            throw new FileException("Wrong extension (not .$extension) of file: $filePath");
         }
     }
 }

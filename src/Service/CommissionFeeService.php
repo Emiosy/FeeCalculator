@@ -6,7 +6,7 @@ use App\CurrenciesConfigParserTrait;
 use App\Entity\Transaction;
 use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class CommissionFeeService
 {
@@ -61,12 +61,12 @@ class CommissionFeeService
      */
     private ArrayCollection $commissionFees;
 
-    public function __construct(ParameterBagInterface $params, ExchangeRatesService $exchangeRatesService)
+    public function __construct(ContainerInterface $container, ExchangeRatesService $exchangeRatesService)
     {
-        $this->decimalPlaces = $this->getParsedCurrenciesConfig($params, 'accept');
-        $this->depositFees = $this->getParsedCurrenciesConfig($params, 'deposit');
-        $this->withdrawFees = $this->getParsedCurrenciesNestedConfig($params, 'withdraw');
-        $this->baseCurrency = $this->getPlainCurrenciesConfig($params, 'default');
+        $this->decimalPlaces = $this->getParsedCurrenciesConfig($container, 'accept');
+        $this->depositFees = $this->getParsedCurrenciesConfig($container, 'deposit');
+        $this->withdrawFees = $this->getParsedCurrenciesNestedConfig($container, 'withdraw');
+        $this->baseCurrency = $this->getPlainCurrenciesConfig($container, 'default');
         $this->exchangeRates = $exchangeRatesService;
         $this->transactions = new ArrayCollection();
         $this->commissionFees = new ArrayCollection();
