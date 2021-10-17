@@ -73,15 +73,15 @@ class ExchangeRatesService
     }
 
     /**
-     * Change currency of transaction using exchange rate.
+     * Change currency from base to foreign of transaction using exchange rate.
      *
      * @param string $valueToChange Value to change currency
      * @param string $exchangeRate Exchange rate
      *
      * @return string Value at new currency
      */
-    public function changeCurrencyOfValue(string $valueToChange, string $exchangeRate): string
+    public function changeCurrencyFromBaseToForeign(string $valueToChange, string $exchangeRate): string
     {
-        return bcmul($valueToChange, $exchangeRate, 10);
+        return bcdiv($valueToChange, $exchangeRate, 10);
     }
 }

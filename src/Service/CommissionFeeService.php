@@ -351,7 +351,7 @@ class CommissionFeeService
         } else {
             //Free quota detected, calculate amount that is over quota
             $freeQuota = bcsub($withdrawQuota, $moneyWithdrawnAtWeek, 10);
-            $amountOfTransaction = bcsub($amountOfTransaction, $freeQuota);
+            $amountOfTransaction = bcsub($amountOfTransaction, $freeQuota, 10);
         }
 
         //If $amountOfTransaction >0 user fee should be calculated
@@ -373,12 +373,17 @@ class CommissionFeeService
         if (!$transactionToCheck->isEmpty()) {
             /** @var Transaction $transaction */
             foreach ($transactionToCheck as $transaction) {
-                //Check if transaction currency is at base currency
+                //Check if transaction currency is not at base currency
                 if ($transaction->getTransactionCurrency() !== $this->baseCurrency) {
-                    $moneyWithdrawn = bcadd($moneyWithdrawn, $this->exchangeRates->changeCurrencyOfValue(
+                    $moneyAtBaseCurrency = $this->exchangeRates->changeCurrencyFromBaseToForeign(
                         (string)$transaction->getTransactionAmount(),
                         (string)$currencyRates[$transaction->getTransactionCurrency()]
-                    ), 10);
+                    );
+                    $moneyWithdrawn = bcadd(
+                        $moneyWithdrawn,
+                        $this->convertAmountWithoutDecimal($moneyAtBaseCurrency, $this->baseCurrency),
+                        10
+                    );
                 } else {
                     $moneyWithdrawn = bcadd($moneyWithdrawn, $transaction->getTransactionAmount(), 10);
                 }
