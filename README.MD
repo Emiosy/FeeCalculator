@@ -26,9 +26,9 @@ EXCHANGE_RATES_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXX
 ```bash
 php composer.phar install
 ```
-5. Generate `APP_SECRET` by command
-```bash
-php bin/console secrets:generate-keys
+5. Generate `APP_SECRET` using favorite password tool and paste it to `.env` file
+```dotenv
+APP_SECRET=XXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 6. Setup Your currencies configuration at `config/currencies.yaml` or leave default. *More information about it You can find at Description section*
 
