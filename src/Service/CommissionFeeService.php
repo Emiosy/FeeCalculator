@@ -27,15 +27,23 @@ class CommissionFeeService
     private ArrayCollection $commissionFees;
 
     /**
-     * Array with parsed deposit fees
+     * Array with parsed deposit fees.
      *
      * @var array Deposit fees
      */
     private array $depositFees;
 
+    /**
+     * Array with withdraw fees.
+     *
+     * @var array Withdraw fees
+     */
+    private array $withdrawFees;
+
     public function __construct(ParameterBagInterface $params)
     {
         $this->depositFees = $this->getParsedCurrenciesConfig($params, 'deposit');
+        $this->withdrawFees = $this->getParsedCurrenciesNestedConfig($params, 'withdraw');
         $this->transactions = new ArrayCollection();
         $this->commissionFees = new ArrayCollection();
     }
