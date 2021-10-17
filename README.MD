@@ -1,4 +1,4 @@
-#Fee calculator
+# Fee calculator
 
 App for parse CSV and calculate commission fees, based on data from file.
 
@@ -6,11 +6,11 @@ Software based on Symfony4 framework.
 
 ***
 
-###Requirements
+### Requirements
 * PHP 7.4 with ext-bcmath
 * Composer2
 
-###Installation
+### Installation
 1. Clone this repo 
 ```bash
 git clone https://github.com/Emiosy/FeeCalculator.git
@@ -29,7 +29,7 @@ php composer.phar install
 
 ***
 
-###Description
+### Description
 Code respects 2 types of transactions: 
 * `deposit`
 * `withdraw`
