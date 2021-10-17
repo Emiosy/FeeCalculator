@@ -34,6 +34,27 @@ php bin/console secrets:generate-keys
 
 ***
 
+### Usage
+
+To run app simply run, where `XXX` is location to CSV file.
+```php
+php bin/console fee:calculate XXX
+php bin/console fee:calculate input.csv
+php bin/console fee:calculate tests/input.csv
+```
+App provides `demoMode` where You have fixed exchange rates. Feature was written to have better error handling. Demo modes provides rates below:
+```php
+['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53]
+```
+You can run this by adding `demoMode` as second parameter
+```php
+php bin/console fee:calculate XXX demoMode
+php bin/console fee:calculate input.csv demoMode
+php bin/console fee:calculate tests/input.csv demoMode
+```
+
+***
+
 ### Description
 Code respects 2 types of transactions: 
 * `deposit`
