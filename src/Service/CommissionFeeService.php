@@ -137,6 +137,20 @@ class CommissionFeeService
     }
 
     /**
+     * Ceil up with precision
+     *
+     * @param string $value Value to ceil up
+     * @param int $precision Precision to save
+     *
+     * @return float|int
+     */
+    public function ceilUp(string $value, int $precision)
+    {
+        $pow = pow(10, $precision);
+        return (ceil($pow * $value) + ceil($pow * $value - ceil($pow * $value))) / $pow;
+    }
+
+    /**
      * Parse data to Transaction object
      *
      * @param array $rowFromCsv Array with parsed row from CSV
@@ -196,7 +210,11 @@ class CommissionFeeService
         $amountOverQuota = $this->checkAmountOverQuota(
             $moneyWithdrawnAtWeek,
             $transaction->getTransactionAmount(),
-            $this->withdrawFees[$transaction->getCustomerTypeAsString()]['free_quota']
+            $this->getQuotaAtSpecificCurrency(
+                $this->withdrawFees[$transaction->getCustomerTypeAsString()]['free_quota'],
+                $transaction->getTransactionCurrency(),
+                $currencyRates
+            )
         );
 
         if (bccomp($amountOverQuota, 0, 10) === 1) {
@@ -225,6 +243,68 @@ class CommissionFeeService
     }
 
     /**
+     * Get quota for specific currency.
+     *
+     * @param string $baseQuota Amount of quota at default currency
+     * @param string $returnCurrency Output currency
+     * @param array $exchangeRates Array with exchange rates
+     *
+     * @return string Quota at specific currency
+     */
+    private function getQuotaAtSpecificCurrency(
+        string $baseQuota,
+        string $returnCurrency,
+        array $exchangeRates
+    ): string {
+        $recalculatedQuota = bcmul(
+            number_format(
+                $this->convertAmountToDecimal($baseQuota, $this->baseCurrency),
+                $this->decimalPlaces[$this->baseCurrency],
+                '.',
+                ''
+            ),
+            $exchangeRates[$returnCurrency],
+            10
+        );
+
+        return $this->convertAmountWithoutDecimal($recalculatedQuota, $returnCurrency);
+    }
+
+    /**
+     * Get converted amount with decimals.
+     *
+     * @param string $amount Amount without decimals
+     * @param string $currency Currency to get decimal places
+     *
+     * @return string Amount with decimals
+     */
+    private function convertAmountToDecimal(string $amount, string $currency): string
+    {
+        if ($this->decimalPlaces[$currency] > 0) {
+            $amount = bcdiv($amount, pow(10, $this->decimalPlaces[$currency]), 10);
+        }
+
+        return $amount;
+    }
+
+    /**
+     * Get converted amount without decimals.
+     *
+     * @param string $amount Amount with decimals
+     * @param string $currency Currency to get decimal places
+     *
+     * @return string Amount without decimals
+     */
+    private function convertAmountWithoutDecimal(string $amount, string $currency): string
+    {
+        if ($this->decimalPlaces[$currency] > 0) {
+            $amount = bcmul($amount, pow(10, $this->decimalPlaces[$currency]), 10);
+        }
+
+        return $amount;
+    }
+
+    /**
      * Calculate commission for transaction amount
      *
      * @param string $amount Amount without decimals to calculate fee
@@ -235,10 +315,7 @@ class CommissionFeeService
      */
     private function calculateCommissionForTransactionAmount(string $amount, string $currency, string $fee): string
     {
-        //Check if currency need to be converted
-        if ($this->decimalPlaces[$currency] > 0) {
-            $amount = bcdiv($amount, pow(10, $this->decimalPlaces[$currency]), 10);
-        }
+        $amount = $this->convertAmountToDecimal($amount, $currency);
 
         //Calculate correct format of percents
         $percents = bcdiv($fee, 100, 10);
@@ -246,7 +323,7 @@ class CommissionFeeService
         $fee = bcmul($amount, $percents, 10);
 
         return number_format(
-            round($fee, $this->decimalPlaces[$currency], PHP_ROUND_HALF_UP),
+            $this->ceilUp($fee, $this->decimalPlaces[$currency]),
             $this->decimalPlaces[$currency],
             '.',
             ''
