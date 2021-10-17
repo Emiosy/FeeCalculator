@@ -9,7 +9,7 @@ trait CurrenciesConfigParserTrait
     /**
      * Get parsed array with config about currencies.
      *
-     * @return array Parsed array with config.
+     * @return array parsed array with config
      */
     public function getParsedCurrenciesConfig(ContainerInterface $container, string $nameOfParameter): array
     {
@@ -24,7 +24,7 @@ trait CurrenciesConfigParserTrait
     /**
      * Get parsed nested array with config about currencies.
      *
-     * @return array Parsed array with config.
+     * @return array parsed array with config
      */
     public function getParsedCurrenciesNestedConfig(ContainerInterface $container, string $nameOfParameter): array
     {

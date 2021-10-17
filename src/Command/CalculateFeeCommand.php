@@ -13,7 +13,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class CalculateFeeCommand extends Command
 {
@@ -26,8 +25,6 @@ class CalculateFeeCommand extends Command
 
     /**
      * Array with accepted currencies.
-     *
-     * @var array
      */
     private array $acceptedCurrencies;
 
@@ -54,7 +51,7 @@ class CalculateFeeCommand extends Command
             ->addArgument('filePath', InputArgument::REQUIRED, 'Path to a file with transactions to parse.')
             ->addArgument('demoMode', InputArgument::OPTIONAL, 'Mode with no live download of exchange rates.')
             ->setDescription('Calculate fees for transactions.')
-            ->setHelp("This command calculate fees from input file");
+            ->setHelp('This command calculate fees from input file');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

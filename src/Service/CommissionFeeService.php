@@ -14,8 +14,6 @@ class CommissionFeeService
 
     /**
      * Array with decimal places of currencies.
-     *
-     * @var array
      */
     private array $decimalPlaces;
 
@@ -41,21 +39,17 @@ class CommissionFeeService
     private $baseCurrency;
 
     /**
-     * Exchange rates Service
-     *
-     * @var ExchangeRatesService
+     * Exchange rates Service.
      */
     private ExchangeRatesService $exchangeRates;
 
     /**
      * Parsed customers with transactions.
-     *
-     * @var ArrayCollection
      */
     private ArrayCollection $transactions;
 
     /**
-     * Collection with calculated commission fees
+     * Collection with calculated commission fees.
      *
      * @var ArrayCollection Commission fees
      */
@@ -73,11 +67,11 @@ class CommissionFeeService
     }
 
     /**
-     * Calculate fee
+     * Calculate fee.
      *
-     * @param string $filePath Path to CSV file
-     * @param array $acceptedCurrencies Array with accepted currencies
-     * @param array $currencyRates Array with currency rates
+     * @param string $filePath           Path to CSV file
+     * @param array  $acceptedCurrencies Array with accepted currencies
+     * @param array  $currencyRates      Array with currency rates
      *
      * @return ArrayCollection Array collection with calculated commission fees
      */
@@ -90,10 +84,10 @@ class CommissionFeeService
     }
 
     /**
-     * Analyze and count commissions for all transactions at collection
+     * Analyze and count commissions for all transactions at collection.
      *
-     * @param ArrayCollection $transactions Array collection with transactions to analyze
-     * @param array $currencyRates Array with currency rates
+     * @param ArrayCollection $transactions  Array collection with transactions to analyze
+     * @param array           $currencyRates Array with currency rates
      *
      * @return ArrayCollection Array collection with calculated commission fees
      */
@@ -103,31 +97,32 @@ class CommissionFeeService
             foreach ($transactions as $transaction) {
                 /** @var Transaction $transaction */
                 $fee = (
-                    ($transaction->getTransactionType() === 1) ?
+                    (1 === $transaction->getTransactionType()) ?
                     $this->processDeposit($transaction) :
                     $this->processWithdraw($transaction, $currencyRates)
                 );
                 $this->commissionFees->add($fee);
             }
         }
+
         return $this->commissionFees;
     }
 
     /**
      * Read and parse CSV file with transactions.
      *
-     * @param string $filePath Path to CSV file
-     * @param array $acceptedCurrencies Array with accepted currencies
+     * @param string $filePath           Path to CSV file
+     * @param array  $acceptedCurrencies Array with accepted currencies
      *
      * @return ArrayCollection Array collection with Transaction objects
      */
     public function readAndParseTransactions(string $filePath, array $acceptedCurrencies): ArrayCollection
     {
-        $fileToRead = fopen($filePath, "r");
+        $fileToRead = fopen($filePath, 'r');
         while (($data = fgetcsv($fileToRead, 1000)) !== false) {
             //Check if currency is acceptable
-            if (in_array((string)$data[5], array_keys($acceptedCurrencies))) {
-                $transaction = $this->parseTransactionToObject($data, $acceptedCurrencies[(string)$data[5]]);
+            if (in_array((string) $data[5], array_keys($acceptedCurrencies))) {
+                $transaction = $this->parseTransactionToObject($data, $acceptedCurrencies[(string) $data[5]]);
 
                 $this->transactions->add($transaction);
             }
@@ -137,39 +132,40 @@ class CommissionFeeService
     }
 
     /**
-     * Ceil up with precision
+     * Ceil up with precision.
      *
-     * @param string $value Value to ceil up
-     * @param int $precision Precision to save
+     * @param string $value     Value to ceil up
+     * @param int    $precision Precision to save
      *
      * @return float|int
      */
     public function ceilUp(string $value, int $precision)
     {
         $pow = pow(10, $precision);
+
         return (ceil($pow * $value) + ceil($pow * $value - ceil($pow * $value))) / $pow;
     }
 
     /**
-     * Parse data to Transaction object
+     * Parse data to Transaction object.
      *
-     * @param array $rowFromCsv Array with parsed row from CSV
-     * @param int $decimalsOfCurrency Decimals of currency
+     * @param array $rowFromCsv         Array with parsed row from CSV
+     * @param int   $decimalsOfCurrency Decimals of currency
      *
      * @return Transaction Transaction object
      */
     private function parseTransactionToObject(array $rowFromCsv, int $decimalsOfCurrency): Transaction
     {
-        $carbonDate = Carbon::createFromFormat('Y-m-d', (string)$rowFromCsv[0]);
+        $carbonDate = Carbon::createFromFormat('Y-m-d', (string) $rowFromCsv[0]);
         $parsedAmount = ($rowFromCsv[4] * pow(10, $decimalsOfCurrency));
 
         return new Transaction(
             $carbonDate,
-            (int)$rowFromCsv[1],
-            (string)$rowFromCsv[2],
-            (string)$rowFromCsv[3],
-            (int)$parsedAmount,
-            (string)$rowFromCsv[5],
+            (int) $rowFromCsv[1],
+            (string) $rowFromCsv[2],
+            (string) $rowFromCsv[3],
+            (int) $parsedAmount,
+            (string) $rowFromCsv[5],
             $decimalsOfCurrency
         );
     }
@@ -193,8 +189,8 @@ class CommissionFeeService
     /**
      * Process withdraw transaction and calculate commission fee.
      *
-     * @param Transaction $transaction Transaction to process
-     * @param array $currencyRates Array with currency rates
+     * @param Transaction $transaction   Transaction to process
+     * @param array       $currencyRates Array with currency rates
      *
      * @return string Amount of commission
      */
@@ -217,7 +213,7 @@ class CommissionFeeService
             )
         );
 
-        if (bccomp($amountOverQuota, 0, 10) === 1) {
+        if (1 === bccomp($amountOverQuota, 0, 10)) {
             $fee = $this->calculateCommissionForTransactionAmount(
                 $amountOverQuota,
                 $transaction->getTransactionCurrency(),
@@ -245,9 +241,9 @@ class CommissionFeeService
     /**
      * Get quota for specific currency.
      *
-     * @param string $baseQuota Amount of quota at default currency
+     * @param string $baseQuota      Amount of quota at default currency
      * @param string $returnCurrency Output currency
-     * @param array $exchangeRates Array with exchange rates
+     * @param array  $exchangeRates  Array with exchange rates
      *
      * @return string Quota at specific currency
      */
@@ -273,7 +269,7 @@ class CommissionFeeService
     /**
      * Get converted amount with decimals.
      *
-     * @param string $amount Amount without decimals
+     * @param string $amount   Amount without decimals
      * @param string $currency Currency to get decimal places
      *
      * @return string Amount with decimals
@@ -290,7 +286,7 @@ class CommissionFeeService
     /**
      * Get converted amount without decimals.
      *
-     * @param string $amount Amount with decimals
+     * @param string $amount   Amount with decimals
      * @param string $currency Currency to get decimal places
      *
      * @return string Amount without decimals
@@ -305,13 +301,11 @@ class CommissionFeeService
     }
 
     /**
-     * Calculate commission for transaction amount
+     * Calculate commission for transaction amount.
      *
-     * @param string $amount Amount without decimals to calculate fee
+     * @param string $amount   Amount without decimals to calculate fee
      * @param string $currency Currency of transaction to return correct format
-     * @param string $fee Amount of fee
-     *
-     * @return string
+     * @param string $fee      Amount of fee
      */
     private function calculateCommissionForTransactionAmount(string $amount, string $currency, string $fee): string
     {
@@ -334,8 +328,7 @@ class CommissionFeeService
      * Check amount over quota.
      *
      * @param string $moneyWithdrawnAtWeek Sum amount of transaction from billing week
-     * @param string $amountOfTransaction Amount of actual transaction
-     * @param string $withdrawQuota
+     * @param string $amountOfTransaction  Amount of actual transaction
      *
      * @return string Amount of transaction to calculate fee (If >0 user fee should be calculated)
      */
@@ -345,7 +338,7 @@ class CommissionFeeService
         string $withdrawQuota
     ): string {
         //Check if full amount of transaction is over quota
-        if (bccomp($moneyWithdrawnAtWeek, $withdrawQuota, 10) === 1) {
+        if (1 === bccomp($moneyWithdrawnAtWeek, $withdrawQuota, 10)) {
             //All amount is over quota, calculate fee for 100% of transaction
             return $amountOfTransaction;
         } else {
@@ -362,7 +355,7 @@ class CommissionFeeService
      * Money withdrawn at passed transactions.
      *
      * @param ArrayCollection $transactionToCheck Transaction of withdraw to check
-     * @param array $currencyRates Currency rates to do a calculations
+     * @param array           $currencyRates      Currency rates to do a calculations
      *
      * @return string Amount of withdrawn money at base currency
      */
@@ -376,8 +369,8 @@ class CommissionFeeService
                 //Check if transaction currency is not at base currency
                 if ($transaction->getTransactionCurrency() !== $this->baseCurrency) {
                     $moneyAtBaseCurrency = $this->exchangeRates->changeCurrencyFromBaseToForeign(
-                        (string)$transaction->getTransactionAmount(),
-                        (string)$currencyRates[$transaction->getTransactionCurrency()]
+                        (string) $transaction->getTransactionAmount(),
+                        (string) $currencyRates[$transaction->getTransactionCurrency()]
                     );
                     $moneyWithdrawn = bcadd(
                         $moneyWithdrawn,
@@ -390,14 +383,14 @@ class CommissionFeeService
             }
         }
 
-        return (string)$moneyWithdrawn;
+        return (string) $moneyWithdrawn;
     }
 
     /**
      * Get all parsed transactions of customer from billing week.
      *
      * @param Transaction $compareTransaction Transaction to compare
-     * @param string $typeOfTransaction Type of transaction (deposit | withdraw)
+     * @param string      $typeOfTransaction  Type of transaction (deposit | withdraw)
      *
      * @return ArrayCollection Array collection with transaction to parse
      */
@@ -409,10 +402,9 @@ class CommissionFeeService
         $endWeek = $compareTransaction->getTransactionBillingWeek()['endOfWeek'];
 
         $transactionToCheck = $this->transactions->filter(
-        /**
-         * @param Transaction $transaction
-         * @return bool|void
-         */
+            /**
+             * @return bool|void
+             */
             function (Transaction $transaction) use ($compareTransaction, $startWeek, $endWeek, $typeOfTransaction) {
                 if (
                     $transaction->isParsedStatus()

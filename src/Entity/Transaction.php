@@ -7,7 +7,7 @@ use Carbon\Carbon;
 class Transaction
 {
     /**
-     * Customer transaction types
+     * Customer transaction types.
      */
     public const TRANSACTION_TYPES = [
         1 => 'deposit',
@@ -15,7 +15,7 @@ class Transaction
     ];
 
     /**
-     * Customer account types
+     * Customer account types.
      */
     public const CUSTOMER_ACCOUNT_TYPES = [
         1 => 'business',
@@ -43,64 +43,46 @@ class Transaction
 
     /**
      * Transaction date.
-     *
-     * @var Carbon
      */
     private Carbon $date;
 
     /**
      * Customer Identifier.
-     *
-     * @var int
      */
     private int $customer_id;
 
     /**
      * Customer type.
-     *
-     * @var int
      */
     private int $customer_type;
 
     /**
      * Transaction type.
-     *
-     * @var int
      */
     private int $transaction_type;
 
     /**
-     * Transaction value (without "pennies")
-     *
-     * @var int
+     * Transaction value (without "pennies").
      */
     private int $amount;
 
     /**
-     * Transaction currency
-     *
-     * @var string
+     * Transaction currency.
      */
     private string $currency;
 
     /**
-     * Decimals at amount
-     *
-     * @var int
+     * Decimals at amount.
      */
     private int $amount_decimals;
 
     /**
      * Is parsed status.
-     *
-     * @var bool
      */
     private bool $is_parsed;
 
     /**
-     * Getter for Transaction date
-     *
-     * @return Carbon
+     * Getter for Transaction date.
      */
     public function getTransactionDate(): Carbon
     {
@@ -109,8 +91,6 @@ class Transaction
 
     /**
      * Getter for Transaction date as day of week.
-     *
-     * @return int
      */
     public function getTransactionDateAsDayOfWeek(): int
     {
@@ -119,18 +99,14 @@ class Transaction
 
     /**
      * Getter for Transaction billing week.
-     *
-     * @return array
      */
     public function getTransactionBillingWeek(): array
     {
-        return ['startOfWeek' => (clone($this->date))->startOfWeek(), 'endOfWeek' => (clone($this->date))->endOfWeek()];
+        return ['startOfWeek' => (clone $this->date)->startOfWeek(), 'endOfWeek' => (clone $this->date)->endOfWeek()];
     }
 
     /**
      * Getter for Transaction customer identifier.
-     *
-     * @return int
      */
     public function getCustomerId(): int
     {
@@ -149,8 +125,6 @@ class Transaction
 
     /**
      * Getter for customer type as string.
-     *
-     * @return string
      */
     public function getCustomerTypeAsString(): string
     {
@@ -169,8 +143,6 @@ class Transaction
 
     /**
      * Getter for Transaction type as string.
-     *
-     * @return string
      */
     public function getTransactionTypeAsString(): string
     {
@@ -179,8 +151,6 @@ class Transaction
 
     /**
      * Getter for Transaction amount at raw format.
-     *
-     * @return int
      */
     public function getTransactionAmount(): int
     {
@@ -189,8 +159,6 @@ class Transaction
 
     /**
      * Getter for Transaction amount at string format.
-     *
-     * @return string
      */
     public function getTransactionAmountAsString(): string
     {
@@ -198,9 +166,7 @@ class Transaction
     }
 
     /**
-     * Getter for Transaction currency
-     *
-     * @return string
+     * Getter for Transaction currency.
      */
     public function getTransactionCurrency(): string
     {
@@ -209,8 +175,6 @@ class Transaction
 
     /**
      * Getter for Transaction amount decimal places.
-     *
-     * @return int
      */
     public function getAmountDecimalPlaces(): int
     {
@@ -219,8 +183,6 @@ class Transaction
 
     /**
      * Getter for parsed status.
-     *
-     * @return bool
      */
     public function isParsedStatus(): bool
     {
@@ -229,8 +191,6 @@ class Transaction
 
     /**
      * Setter for parsed status.
-     *
-     * @param bool $parsedStatus
      */
     public function setParsedStatus(bool $parsedStatus): void
     {

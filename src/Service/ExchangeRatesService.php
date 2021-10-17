@@ -30,7 +30,7 @@ class ExchangeRatesService
      * Download the latest exchange rates.
      *
      * @param string $apiEndpoint Api endpoint URL
-     * @param string $apiKey Api endpoint key
+     * @param string $apiKey      Api endpoint key
      *
      * @return Exception|mixed|ClientExceptionInterface|DecodingExceptionInterface|RedirectionExceptionInterface|ServerExceptionInterface|TransportExceptionInterface
      */
@@ -48,16 +48,16 @@ class ExchangeRatesService
                             $this->container,
                             'accept'
                         ))),
-                    ]
+                    ],
                 ]
             );
 
-            if ($response->getStatusCode() === 200) {
+            if (200 === $response->getStatusCode()) {
                 if (!empty($response->toArray()) && isset($response->toArray()['rates'])) {
                     return $response->toArray()['rates'];
                 }
 
-                throw new ExchangeRatesException("Rates not found at expected place.");
+                throw new ExchangeRatesException('Rates not found at expected place.');
             }
 
             throw new ExchangeRatesException("Expected status code 200, received {$response->getStatusCode()}");
@@ -76,7 +76,7 @@ class ExchangeRatesService
      * Change currency from base to foreign of transaction using exchange rate.
      *
      * @param string $valueToChange Value to change currency
-     * @param string $exchangeRate Exchange rate
+     * @param string $exchangeRate  Exchange rate
      *
      * @return string Value at new currency
      */

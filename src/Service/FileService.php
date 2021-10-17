@@ -17,12 +17,10 @@ class FileService
     /**
      * Check if file exist and has a good extension.
      *
-     * @param string $filePath Path to file for parse
+     * @param string $filePath  Path to file for parse
      * @param string $extension Extension to validate
      *
      * @throws FileException
-     *
-     * @return bool
      */
     public function checkFileAndExtension(string $filePath, string $extension): bool
     {
@@ -53,7 +51,7 @@ class FileService
     /**
      * Check file extension of file passed at $filePath.
      *
-     * @param string $filePath Filepath with file to check
+     * @param string $filePath  Filepath with file to check
      * @param string $extension Extension to compare with passed file
      *
      * @throws FileException
