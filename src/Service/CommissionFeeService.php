@@ -166,12 +166,12 @@ class CommissionFeeService
      *
      * @param Transaction $transaction Transaction to process
      *
-     * @return float Amount of commission
+     * @return string Amount of commission
      */
-    private function processDeposit(Transaction $transaction): float
+    private function processDeposit(Transaction $transaction): string
     {
         return $this->calculateCommissionForTransactionAmount(
-            $transaction->getTransactionAmountAsString(),
+            $transaction->getTransactionAmount(),
             $transaction->getTransactionCurrency(),
             $this->depositFees[$transaction->getCustomerTypeAsString()]
         );
@@ -232,20 +232,30 @@ class CommissionFeeService
     /**
      * Calculate commission for transaction amount
      *
-     * @param string $amount Amount to calculate fee
+     * @param string $amount Amount without decimals to calculate fee
      * @param string $currency Currency of transaction to return correct format
      * @param string $fee Amount of fee
      *
-     * @return float
+     * @return string
      */
-    private function calculateCommissionForTransactionAmount(string $amount, string $currency, string $fee): float
+    private function calculateCommissionForTransactionAmount(string $amount, string $currency, string $fee): string
     {
+        //Check if currency need to be converted
+        if ($this->decimalPlaces[$currency] > 0) {
+            $amount = bcdiv($amount, pow(10, $this->decimalPlaces[$currency]), 10);
+        }
+
         //Calculate correct format of percents
         $percents = bcdiv($fee, 100, 10);
         //Calculate final fee
         $fee = bcmul($amount, $percents, 10);
 
-        return round($fee, $this->decimalPlaces[$currency], PHP_ROUND_HALF_UP);
+        return number_format(
+            round($fee, $this->decimalPlaces[$currency], PHP_ROUND_HALF_UP),
+            $this->decimalPlaces[$currency],
+            '.',
+            ''
+        );
     }
 
     /**
