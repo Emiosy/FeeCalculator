@@ -23,11 +23,11 @@ EXCHANGE_RATES_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXX
 **Warning: Free key allow You to use only `EUR` as base currency.**
 
 4. Install all dependencies via Composer2
-```php
+```bash
 php composer.phar install
 ```
 5. Generate `APP_SECRET` by command
-```php
+```bash
 php bin/console secrets:generate-keys
 ```
 6. Setup Your currencies configuration at `config/currencies.yaml` or leave default. *More information about it You can find at Description section*
@@ -37,7 +37,7 @@ php bin/console secrets:generate-keys
 ### Usage
 
 To run app simply run, where `XXX` is location to CSV file.
-```php
+```bash
 php bin/console fee:calculate XXX
 php bin/console fee:calculate input.csv
 php bin/console fee:calculate tests/input.csv
@@ -47,10 +47,22 @@ App provides `demoMode` where You have fixed exchange rates. Feature was written
 ['EUR' => 1, 'USD' => 1.1497, 'JPY' => 129.53]
 ```
 You can run this by adding `demoMode` as second parameter
-```php
+```bash
 php bin/console fee:calculate XXX demoMode
 php bin/console fee:calculate input.csv demoMode
 php bin/console fee:calculate tests/input.csv demoMode
+```
+
+***
+
+### Testing
+To run all test of app, run at console
+```bash
+php bin/phptest
+```
+To run only basic test of app, run at console
+```bash
+php bin/phpunit tests/Command/CalculateFeeCommandTest.php
 ```
 
 ***
